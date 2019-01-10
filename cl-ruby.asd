@@ -8,8 +8,8 @@
   :version "0.0.1"
   :serial t
   :depends-on (#:cffi)
-  :components ((:module "src"
+  :components ((:file "package") ;; topmost directory
+               (:module "src"   ;; /src directory
                 :components
-                ((:file "package")
-                 (:file "cl-ruby")
-                 (:file "ruby-types"))))
+                ((:file "cl-ruby")
+                 (:file "ruby-types")))))
