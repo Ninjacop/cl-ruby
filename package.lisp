@@ -4,16 +4,17 @@
 (defpackage #:cl-ruby
   (:use #:cl #:cffi)
   ;; cl-ruby.lisp
-  (:export #:evaulate
-           #:evaulate-or-die
+  (:export #:init-ruby
+           #:end-ruby
+           #:in-ruby
+           #:evaluate
+           #:evaluate-or-die
            #:module
            #:submodule
            #:class-with-super
-           #:class
-           #:nested-class
+           #:define-class
+           #:subclass-with-super
            #:define-subclass
-           #:subclass
-           #:nested-subclass
            #:class-method
            #:module-method
            #:global
@@ -23,6 +24,7 @@
            #:const-call 
            #:module-const-call 
            #:ruby-funcall 
-           #:require 
+           #:require-script
            #:load-script 
            #:load-script-or-die))
+
