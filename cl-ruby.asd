@@ -12,4 +12,4 @@
                (:module "src"   ;; /src directory
                 :components
                 ((:file "cl-ruby")
-                 (:file "ruby-types")))))
+                 (:file "ruby-classes")))))
