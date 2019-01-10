@@ -12,12 +12,12 @@ VALUE ruby_eval(const char* code);
 VALUE ruby_eval_or_die(const char* code, const char* exception);
 
 /* Define modules and submodules/child modules */
-void ruby_define_module(const char* module_name);
-void ruby_define_submodule(const char* submodule_name, VALUE module_name);
+VALUE ruby_define_module(const char* module_name);
+VALUE ruby_define_submodule(const char* submodule_name, VALUE module_name);
 
 /* Define classes and subclasses/child classes */
-void ruby_define_class(const char* class_name, VALUE super_name);
-void ruby_define_subclass
+VALUE ruby_define_class(const char* class_name, VALUE super_name);
+VALUE ruby_define_subclass
 (const char* subclass_name, VALUE parent_name, VALUE super);
 
 /* Define class methods, module methods and global methods/functions */
@@ -46,5 +46,9 @@ void ruby_load_or_die(const char* name, const char* exception);
 
 /* Get the last exception for debugging */
 VALUE ruby_get_last_exception();
+
+/* Start and stop the Ruby FFI */
+void ruby_init_all();
+void ruby_end_processes();
 
 #endif

@@ -22,21 +22,21 @@ VALUE ruby_eval_or_die(const char* code, const char* exception) {
     return result;
 }
 
-void ruby_define_module(const char* module_name) {
-    rb_define_module(module_name);
+VALUE ruby_define_module(const char* module_name) {
+    return rb_define_module(module_name);
 }
 
-void ruby_define_submodule(const char* submodule_name, VALUE module_name) {
-    rb_define_module_under(module_name, submodule_name);
+VALUE ruby_define_submodule(const char* submodule_name, VALUE module_name) {
+    return rb_define_module_under(module_name, submodule_name);
 }
 
-void ruby_define_class(const char* class_name, VALUE super_name) {
-    rb_define_class(class_name, super_name);
+VALUE ruby_define_class(const char* class_name, VALUE super_name) {
+    return rb_define_class(class_name, super_name);
 }
 
-void ruby_define_subclass
+VALUE ruby_define_subclass
 (const char* subclass_name, VALUE parent_name, VALUE super) {
-    rb_define_class_under(parent_name, subclass_name, super);
+    return rb_define_class_under(parent_name, subclass_name, super);
 }
 
 void ruby_define_class_method
@@ -60,6 +60,9 @@ void ruby_define_constant(const char* name, VALUE value) {
 
 void ruby_define_module_constant
 (VALUE module_name, const char* name, VALUE value) {
+    // VALUE value needs to be coerced from uintptr_t
+    // to a c number/string/something
+    // documentation of this is under VALUE in the Ruby C API
     rb_define_const(module_name, name, value);
 }
 
@@ -106,7 +109,21 @@ VALUE ruby_get_last_exception() {
     return exception;
 }
 
+void ruby_init_all() {
+    ruby_init();
+    ruby_init_loadpath();
+}
+
+// ruby_end_processes is declared so in Common Lisp
+// it can be called with no arguments instead of 
+// including the 0
+void ruby_end_processes() {
+    ruby_cleanup(0); 
+}
+
+// Method main is used for testing if libruby works/compiles
 int main () {
+    ruby_init();
     VALUE result;
     result = rb_eval_string("puts 'example'");
     
