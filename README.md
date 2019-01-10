@@ -4,7 +4,7 @@ A Common Lisp to Ruby FFI
 
 ## Important Note
 
-As of the current state of the project, it isn't functional, but it will be actively maintained.
+As of the current state of the project, it has some errors, but will be actively maintained
 
 ## Installation
 
