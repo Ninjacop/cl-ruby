@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file. This change
 
 - Test cases for most functions & an example Ruby script for those test cases
 
-## Changed
+### Changed
 
 - subclass -> subclass-with-super
 
