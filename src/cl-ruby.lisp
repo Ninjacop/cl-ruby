@@ -1,183 +1,159 @@
 ;;;; cl-ruby.lisp
 ;;;; Created by Ninjacop123
 ;;;; Wednesday, January 9th, 2019
-
+;;;; Basic functions that need to be elaborated upon
+;;;; from their C counterparts
 (in-package #:cl-ruby)
 
 (cffi:define-foreign-library cl-ruby
-    (t (:default "cl-ruby"))) ; todo update paths and make sure this can
+    (t (:default "/path/to/cl-ruby/src/cl-ruby"))) ; the dylib/dll/so part is omitted
+                              ; TODO update paths and make sure this can
                               ; be found in specific directories/make it
                               ; specified
 
 (use-foreign-library cl-ruby)
 
+;;; The uintptr_t declaration is here because if it is declared elsewhere
+;;; it results in an error 
 ;; Ruby values are custom, but in actuality, 
 ;; the overarching value type in C is a uintptr_t
 (cffi:defctype uintptr_t #.(ecase 
   (cffi:foreign-type-size :pointer) 
   (4 :uint32) (8 :uint64))) ; x86-64 and x64 specifications 
 
-;;; Going in and out of Ruby 
-(cffi:defcfun ("ruby_init_all" init-ruby) :void
-  "Initializes Ruby and subsequently the FFI.")
-  ; no arguments
 
-(cffi:defcfun ("ruby_end_processes" end-ruby) :void
-  "Ends/cleans up the Ruby VM.")
-  ;no arguments
+;; Global variable for segfault/memory protection with starting/ending the 
+;; Ruby VM
+(defparameter *ruby-is-running* nil)
+
+;; Global variable for storing Ruby CFFI callbacks
+(defvar *ruby-callbacks* (make-hash-table))
+
+;;; Common Lisp functions that use the C functions and make it 
+;;; safer/has more fallthroughs so segfaults are less likely to occur
+(defun init-ruby ()
+  "Initializes the Ruby VM, but with extra precaution."
+  (if *ruby-is-running* 
+      (error "Ruby is already running!")
+      (progn
+        (ruby-init-ruby)
+        (setq *ruby-is-running* t))))
+
+(defun end-ruby ()
+  "Ends and cleans up the Ruby VM, but with extra precaution."
+  (if *ruby-is-running*
+      (progn 
+        (ruby-end-ruby)
+        (setq *ruby-is-running* nil))
+      (error "There is no Ruby VM running.")))
 
 (defmacro in-ruby (&body body)
+  "Shortcut macro for starting the Ruby VM, evaluating code, 
+   and then cleaning up the VM regardless of errors."
   `(progn
-     (init-ruby)
-     ,@body
-     (end-ruby)))
+    (init-ruby)
+    (unwind-protect 
+        (progn ,@body)
+      (end-ruby))))
 
-;;; Ruby evaluation
-(cffi:defcfun ("ruby_eval" evaluate) uintptr_t
-  "Evaluate a given Ruby expression/expressions."
-  (code :string))
+(defun evaluate (code)
+  "Evaluate Ruby code, where the Ruby code is stored in the string
+   `code`"
+  (if *ruby-is-running* 
+      (ruby-evaluate code)
+      (error "There is no Ruby VM running.")))
 
-(cffi:defcfun ("ruby_eval_or_die" evaluate-or-die) uintptr_t
-  "Evaluate a given Ruby expression and throw an error if  
-   applicable."
-  (code :string)
-  (exception :string))
-
-;;; Defining Ruby modules
-(cffi:defcfun ("ruby_define_module" module) uintptr_t
-  "Define a Ruby module. Ex - `module Example`."
-  (module-name :string))
-
-(cffi:defcfun ("ruby_define_submodule" submodule) uintptr_t
-  "Define a nested Ruby module. Ex - `module Example::Submodule`."
-  (submodule-name :string)
-  (module-name uintptr_t))
-
-;;; Defining Ruby classes
-(cffi:defcfun ("ruby_define_class" class-with-super) uintptr_t
-  "Defines a Ruby class. Ex - `class Example`."
-  (name :string)
-  (super-name uintptr_t))
-
-(cffi:defcallback define-class-callback uintptr_t ((name :string))
-  "Since uintptr_t is only accessable in CFFI, this 
-   creates a Ruby/C compatible class with no spnecific superclass"
-  (class-with-super name ~basic-object~))
+(defmacro evaluate-or-die (code exception)
+  "Evaluate Ruby code and throw an exception/error when something 
+   goes wrong/segfault."
+  `(unwind-protect 
+      (evaluate ,code) ; TODO fix the SEGFAULT here prints out, 
+                       ; which should be supressed
+    (progn (end-ruby)  ; and replaced with this
+           (error ,exception)))) 
 
 (defun define-class (name)
-  "Shortcut for defining a Ruby/C compatible class"
+  "Shortcut for defining a Ruby/C compatible class."
   (cffi:foreign-funcall-pointer (cffi:callback define-class-callback)
     () :string name uintptr_t))
 
-(cffi:defcfun ("ruby_define_subclass" subclass-with-super) uintptr_t
-  "Defines a Ruby class that is inherited. Ex - `class Example < Example2`."
-  (name :string)
-  (parent-name uintptr_t)
-  (super-name uintptr_t))
-
 (defun define-subclass (name parent-name)
-  "Defines a Ruby class that is inherited without a superclass"
-  (subclass-with-super name parent-name ~basic-object~))
+  "Defines a Ruby class that is inherited without a superclass."
+  (subclass name parent-name ~basic-object~))
 
-(cffi:defcfun ("ruby_define_class_method" ruby-class-method) :void
-  "Defines a Ruby class method."
-  (class-name uintptr_t)
-  (func-name :string)
-  (func uintptr_t)
-  (argc :int))
+;;; Most of the code below has been added/created by zulu-inuoe
+;;; Special thanks to them! 
+(defun %register-callback (name signature)
+  "Add a Ruby/CFFI callback into a callbacks hash table, where 
+   `name` is the key and `signature` is the signature of the 
+   function."
+  (setf (gethash name *ruby-callbacks*) signature))
 
-; todo, fix this to where it's very similar to cffi:defcfun
-(defmacro class-method (ruby-class name args
-                        &body body
-                        &key (return-type :void))
-  "Shortcut for declaring a Ruby class method."
-  `(progn
-      (cffi:defcallback ,name ,return-type ,args ,@body)
-      (ruby-class-method ,ruby-class ,name (cffi:callback ,name) (length ,args))))
+(defun %signature-equal-p (s1 s2)
+  "Compare the given function signatures."
+  (= s1 s2))
 
-(cffi:defcfun ("ruby_define_module_method" ruby-module-method) :void
-  "Defines a Ruby module method."
-  (module-name uintptr_t)
-  (func-name :string)
-  (func uintptr_t)
-  (argc :int))
+(defun %existing-signature-match-p (name signature)
+  "Check if the given function name and signature are 
+   declared/included in the callback hash table and if 
+   they are the same signature."
+  (multiple-value-bind (existing defined-p)
+      (gethash name *ruby-callbacks*)
+    (and defined-p (%signature-equal-p signature existing))))
 
-; todo, fix this also to where it's similar to cffi:defcfun
-(defmacro module-method (module name args 
-                         &body body
-                         &key (return-type :void))
-  "Shortcut for declaring a Ruby module method."
-  `(progn 
-      (cffi:defcallback ,name ,return-type ,args ,@body)
-      (ruby-module-method ,module ,name (cffi:callback ,name) (length ,args))))
+(defun %make-signature (args)
+  "Find the length of the function arguments, thereby declaring the 
+   signature of a given function"
+  (length args))
 
-(cffi:defcfun ("ruby_define_global_func" ruby-global) :void
-  "Define a global Ruby function."
-  (name :string)
-  (func uintptr_t)
-  (argc :int))
+(defun %make-method-name (class-name method-name)
+  "Make a Ruby method name by its convention -- Class.Method.
+   This also works with Modules as well -- Module.Method"
+  (intern (format nil "~A.~A" class-name method-name)))
 
-; todo, make similar to cffi:defcfun
-(defmacro global (name args 
-                  &body body
-                  &key (return-type :void))
-  "Shortcut for defining a global Ruby function."
-  `(progn 
-      (cffi:defcallback ,name ,return-type ,args ,@body)
-      (ruby-global ,name (cffi:callback ,name) (length ,args))))
+(defun %make-global-func-name (global-name)
+  "Make a Ruby global function name, and there's not really a 
+   convention for naming it, so nothing needs to be done."
+  (intern (format nil "~A" global-name)))
 
-(cffi:defcfun ("ruby_define_constant" const) :void
-  "Define a Ruby global constant."
-  (name :string)
-  (value uintptr_t))
+(defmacro class-method (ruby-class name (&rest args) &body body)
+  "Define a Ruby class method given the class that it's defined under, the 
+   name of the target function, it's arguments and the body of that function."
+  (let ((method-name (%make-method-name ruby-class name))
+        (signature (%make-signature args)))
+    `(progn
+       (unless (%existing-signature-match-p ',method-name ,signature)
+         (%register-callback ',method-name ,signature)
+         ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args)))
+            `(cffi:defcallback ,method-name uintptr_t ,ffi-args (,method-name ,@args)))
+         (ruby-class-method ,ruby-class ,name (cffi:callback ,method-name) ,(length args)))
+       (defun ,method-name ,args
+         ,@body))))
 
-(cffi:defcfun ("ruby_define_module_constant" module-const) :void
-  "Define a Ruby module constant - Ex - `Example.CONSTANT"
-  (module_name uintptr_t)
-  (name :string)
-  (value uintptr_t))
+(defmacro module-method (ruby-module name (&rest args) &body body)
+  "Define a Ruby module method given the module that it's defined under, the 
+   name of the target function, it's arguments and the body of that function."
+   (let ((method-name (%make-method-name ruby-module name))
+         (signature (%make-signature args)))
+    `(progn 
+       (unless (%existing-signature-match-p ',method-name ,signature)
+         (%register-callback ',method-name ,signature)
+          ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args)))
+             `(cffi:defcallback ,method-name uintptr_t ,ffi-args (,method-name ,@args)))
+          (ruby-module-method ,ruby-module ,name (cffi:callback ,method-name) ,(length args)))
+       (defun ,method-name ,args
+        ,@body))))
 
-(cffi:defcfun ("ruby_undef_constant" undef) :void
-  "Undefine a Ruby global constant."
-  (name :string))
-
-;; TODO in C, ruby_define_const & ruby_define_global_const 
-;; return void, so somehow get the uintptr_t value of them
-;; and print them back out
-(cffi:defcfun ("ruby_call_constant" const-call) uintptr_t
-  "Call a Ruby global constant."
-  (name :string))
-
-(cffi:defcfun ("ruby_call_module_constant" module-const-call) uintptr_t
-  "Call a Ruby module constant."
-  (module_name uintptr_t)
-  (name :string))
-
-;; Can't really use funcall until variables exist :/
-;; TODO implement variables
-(cffi:defcfun ("ruby_funcall" ruby-funcall) uintptr_t
-  "Call a Ruby function with arguments."
-  (object uintptr_t)
-  (func :string)
-  ; todo In C this is an array, find out a CFFI array type
-  (args :pointer uintptr_t)) 
-
-(cffi:defcfun ("ruby_require" require-script) :void 
-  "Require a Ruby script -- ONLY LOADS ONCE."
-  (name :string))
-
-(cffi:defcfun ("ruby_load" load-script) :void  
-  "Load a Ruby script, can be loaded more than once."
-  (name :string))
-
-(cffi:defcfun ("ruby_load_or_die" load-script-or-die) :void
-  "Load a Ruby script, and if an error occurs or it is not
-   found, throw an error"
-  (name :string)
-  (exception :string))
-
-(cffi:defcfun ("ruby_get_last_exception" last-exception) :void
-  "Get the last Ruby exception if there is one.")
-  ; no arguments 
-
-
+(defmacro global-method (name (&rest args) &body body)
+  "Define a Ruby global function that is defined under the toplevel, with 
+   the given name of the function, its arguments and body."
+   (let ((global-name (%make-global-func-name name))
+         (signature (%make-signature args)))
+    `(progn 
+       (unless (%existing-signature-match-p ',global-name ,signature)
+         (%register-callback ',global-name ,signature)
+          ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args)))
+             `(cffi:defcallback ,global-name uintptr_t ,ffi-args (,method-name ,@args)))
+          (ruby-global ,name (cffi:callback ,global-name) ,(length args)))
+       (defun ,global-name ,args 
+         ,@body))))
