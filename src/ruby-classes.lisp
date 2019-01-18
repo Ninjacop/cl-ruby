@@ -1,9 +1,10 @@
 ;;;; ruby-types.lisp
 ;;;; Created by Ninjacop123
 ;;;; Wednesday, January 9th, 2019
+;;;; CFFI bindings of Ruby classes, modules and exceptions
 (in-package #:cl-ruby)
 
-;; All the variables below represent a Ruby class
+;;; Ruby Modules converted into their CL counterparts (pointers)
 (cffi:defcvar ("rb_mKernel" ~kernel~) uintptr_t)
 (cffi:defcvar ("rb_mComparable" ~comparable~) uintptr_t)
 (cffi:defcvar ("rb_mEnumerable" ~enumerable~) uintptr_t)
@@ -15,6 +16,7 @@
 (cffi:defcvar ("rb_mWaitReadable" ~readable~) uintptr_t)
 (cffi:defcvar ("rb_mWaitWritable" ~writable~) uintptr_t)
 
+;;; Ruby Classes converted into their CL counterparts (pointers)
 (cffi:defcvar ("rb_cBasicObject" ~basic-object~) uintptr_t)
 (cffi:defcvar ("rb_cObject" ~object~) uintptr_t)
 (cffi:defcvar ("rb_cArray" ~array~) uintptr_t)
@@ -41,7 +43,7 @@
 (cffi:defcvar ("rb_cMatch" ~match~) uintptr_t)
 (cffi:defcvar ("rb_cMethod" ~method~) uintptr_t)
 (cffi:defcvar ("rb_cModule" ~module~) uintptr_t)
-(cffi:defcvar ("rb_cNameErrorMesg" ~name-error-mesg~) uintptr_t)
+(cffi:defcvar ("rb_cNameErrorMesg" ~error-mesg~) uintptr_t)
 (cffi:defcvar ("rb_cNilClass" ~nil~) uintptr_t)
 (cffi:defcvar ("rb_cNumeric" ~numeric~) uintptr_t)
 (cffi:defcvar ("rb_cProc" ~proc~) uintptr_t)
@@ -58,6 +60,7 @@
 (cffi:defcvar ("rb_cTrueClass" ~true~) uintptr_t)
 (cffi:defcvar ("rb_cUnboundMethod" ~unbound-method~) uintptr_t)
 
+;;; Ruby Exception Types and their CL counterparts (pointers)
 (cffi:defcvar ("rb_eException" ~exception~) uintptr_t)
 (cffi:defcvar ("rb_eStandardError" ~stderr~) uintptr_t)
 (cffi:defcvar ("rb_eSystemExit" ~sysexit~) uintptr_t)
