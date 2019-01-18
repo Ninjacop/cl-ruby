@@ -2,13 +2,17 @@
 
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).  
 
-## Unreleased
+## 0.0.2
 
 ### Added
 
-- ruby-init -> Init the Ruby VM
+- ruby_funcs.h, ruby_types.h, cffi-fun-defs.lisp, ruby_types.c & ruby-types.lisp for better code organization and preference
 
-- ruby-end -> Clean up and end the Ruby VM
+- Variables! Supported types are Integers, Floats and Strings
+
+- init-ruby -> Init the Ruby VM
+
+- end-ruby -> Clean up and end the Ruby VM
 
 - in-ruby -> Macro for doing both of the above quick
 
@@ -16,11 +20,15 @@ All notable changes to this project will be documented in this file. This change
 
 - Test cases for most functions & an example Ruby script for those test cases
 
+- More comments and function descriptions
+
+- `include` folder for C headers
+
 ### Changed
 
 - subclass -> subclass-with-super
 
-- Renamed `ruby-types.lisp` to `ruby-classes.lisp` because they aren't types
+- evaluate-or-die/last-exception -> Errors are `printf()` & `fflush(stdout)`ed, so that'll share that stream for printing the exception
 
 ### Removed
 
