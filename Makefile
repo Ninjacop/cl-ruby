@@ -6,14 +6,14 @@ RUBYDYLIB:=/usr/local/Cellar/ruby/2.6.0/lib/
 #RUBYDLL:=/path/to/libruby.dll
 #RUBYSO:=/path/to/libruby.so
 
-SRC:=src/ruby_funcs.c
+SRC:=$(wildcard src/*.c)
 
 mac:
-	gcc -L${RUBYDYLIB} -lruby -dynamiclib -o cl-ruby.dylib ${SRC}
+	@-gcc -L${RUBYDYLIB} -lruby -dynamiclib -o cl-ruby.dylib ${SRC}
 
 #windows:
 
 #linux:
 
 test:
-	gcc -L${RUBYDYLIB} -lruby ${SRC} -o main
+	@-gcc -L${RUBYDYLIB} -lruby ${SRC} -o main
