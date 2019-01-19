@@ -76,33 +76,6 @@
   (func uintptr_t)
   (argc :int))
 
-(cffi:defcfun ("ruby_define_constant" const) :void
-  "Define a Ruby global constant."
-  (name :string)
-  (value uintptr_t))
-
-(cffi:defcfun ("ruby_define_module_constant" module-const) :void
-  "Define a Ruby module constant - Ex - `Example.CONSTANT"
-  (module_name uintptr_t)
-  (name :string)
-  (value uintptr_t))
-
-(cffi:defcfun ("ruby_undef_constant" undef) :void
-  "Undefine a Ruby global constant."
-  (name :string))
-
-;; TODO in C, ruby_define_const & ruby_define_global_const 
-;; return void, so somehow get the uintptr_t value of them
-;; and print them back out
-(cffi:defcfun ("ruby_call_constant" const-call) uintptr_t
-  "Call a Ruby global constant."
-  (name :string))
-
-(cffi:defcfun ("ruby_call_module_constant" module-const-call) uintptr_t
-  "Call a Ruby module constant."
-  (module_name uintptr_t)
-  (name :string))
-
 ;;; Variables
 (cffi:defcfun ("ruby_define_int_var" define-int) :void
   "Defines a Ruby VALUE (uintptr_t) integer."
@@ -154,6 +127,83 @@
 (cffi:defcfun ("ruby_call_hash" hash-call) uintptr_t
   "Ruby Hash Table VALUEs aren't encrypted, so a pointer
    is returned."
+  (name :string))
+
+;;; Constants 
+(cffi:defcfun ("ruby_define_int_constant" int-const) :void 
+  "Define an integer Ruby global constant."
+  (name :string)
+  (value :int))
+
+(cffi:defcfun ("ruby_define_int_module_constant" int-module-const) :void
+  "Define an integer Ruby module constant."
+  (module-name uintptr_t)
+  (name :string)
+  (value :int))
+
+(cffi:defcfun ("ruby_define_str_constant" str-const) :void 
+  "Define a string Ruby global constant."
+  (name :string)
+  (value :string))
+
+(cffi:defcfun ("ruby_define_str_module_constant" str-module-const) :void 
+  "Define a string Ruby module constant."
+  (module-name uintptr_t)
+  (name :string)
+  (value :string))
+
+(cffi:defcfun ("ruby_define_float_consant" float-const) :void 
+  "Define a floating point integer Ruby constant."
+  (name :string)
+  (value :float))
+
+(cffi:defcfun ("ruby_define_float_module_constant" float-module-const) :void 
+  "Define a floating point integer Ruby module constant."
+  (module-name uintptr_t)
+  (name :string)
+  (value :float))
+
+(cffi:defcfun ("ruby_undef_constant" undef-const) :void
+  "Undefine a Ruby global constant. The Ruby VM will say that the variable
+   is being redefined, because it is being binded to NIL."
+  (name :string))
+
+(cffi:defcfun ("ruby_undef_module_constant" undef-module-const) :void
+  "Undefine a Ruby module constant. The Ruby "
+  (module-name uintptr_t)
+  (name :string))
+
+(cffi:defcfun ("ruby_call_int_constant" int-const-call) :int 
+  "Define an integer Ruby global constant. See int-call for 
+   more of an explanation."
+  (name :string))
+
+(cffi:defcfun ("ruby_call_int_module_constant" int-module-const-call) :int
+  "Define an integer Ruby module constant. See int-call for more of
+   and explanation."
+  (module-name uintptr_t)
+  (name :string))
+
+(cffi:defcfun ("ruby_call_str_constant" str-const-call) :string 
+  "Define a string Ruby global constant. See str-call for more of 
+   an explanation."
+  (name :string))
+
+(cffi:defcfun ("ruby_call_str_module_constant" str-module-const-call) :string
+  "Define a string Ruby module constant. See str-call for more of 
+   an explanation."
+  (module-name uintptr_t)
+  (name :string))
+
+(cffi:defcfun ("ruby_call_float_constant" float-const-call) :float 
+  "Define a float Ruby constant. See float-call for more of 
+   an explantion."
+  (name :string))
+
+(cffi:defcfun ("ruby_call_float_module_constant" float-module-const-call) :float
+  "Define a float Ruby module constant. See float-call for more of 
+   and explantion."
+  (module-name uintptr_t)
   (name :string))
 
 ;; TODO make variables callable in funcalls
