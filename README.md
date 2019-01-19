@@ -43,8 +43,6 @@ LispWorks      | :x: Hasn't been tested
 
 - class-method/module-method/global -> still has errors, **do not use yet**
 
-- call-const/module-const-call -> Values inputted aren't turned into C/Ruby values
-
 - ruby-funcall -> Haven't put time into making this work yet, but variable support is already here
 
 - require-script -> calling this will result in a never ending loop where Ctrl-C cannot be used successfully
