@@ -112,9 +112,9 @@
   (intern (format nil "~A.~A" class-name method-name)))
 
 (defun %make-global-func-name (global-name)
-  "Make a Ruby global function name, and there's not really a 
-   convention for naming it, so nothing needs to be done."
-  (intern (format nil "~A" global-name)))
+  "Global Ruby methods/functions need to be unique, so a 
+   `global.` is added. "
+  (intern (format nil "global.~A" global-name)))
 
 (defmacro class-method (ruby-class name (&rest args) &body body)
   "Define a Ruby class method given the class that it's defined under, the 
@@ -126,7 +126,8 @@
          (%register-callback ',method-name ,signature)
          ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args)))
             `(cffi:defcallback ,method-name uintptr_t ,ffi-args (,method-name ,@args)))
-         (ruby-class-method ,ruby-class ,name (cffi:callback ,method-name) ,(length args)))
+         (ruby-class-method (cffi:translate-to-foreign (define-class ,ruby-class) 'uintptr_t))
+                            ,name (cffi:callback ,method-name) ,(length args))
        (defun ,method-name ,args
          ,@body))))
 
@@ -138,9 +139,10 @@
     `(progn 
        (unless (%existing-signature-match-p ',method-name ,signature)
          (%register-callback ',method-name ,signature)
-          ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args)))
-             `(cffi:defcallback ,method-name uintptr_t ,ffi-args (,method-name ,@args)))
-          (ruby-module-method ,ruby-module ,name (cffi:callback ,method-name) ,(length args)))
+          ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args))
+                 (module-ptr (cffi:translate-to-foreign (module ruby-module) 'uintptr_t)))
+             `(cffi:defcallback ,method-name uintptr_t ,ffi-args (,method-name ,@args))
+          `(ruby-module-method ,module-ptr ,name (cffi:callback ,method-name) ,(length args))))
        (defun ,method-name ,args
         ,@body))))
 
@@ -153,7 +155,7 @@
        (unless (%existing-signature-match-p ',global-name ,signature)
          (%register-callback ',global-name ,signature)
           ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args)))
-             `(cffi:defcallback ,global-name uintptr_t ,ffi-args (,method-name ,@args)))
-          (ruby-global ,name (cffi:callback ,global-name) ,(length args)))
+             `(cffi:defcallback ,global-name uintptr_t ,ffi-args (,global-name ,@args))
+          `(ruby-global ,name (cffi:callback ,global-name) ,(length args))))
        (defun ,global-name ,args 
          ,@body))))
