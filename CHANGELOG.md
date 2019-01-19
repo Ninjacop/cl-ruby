@@ -8,7 +8,7 @@ All notable changes to this project will be documented in this file. This change
 
 - ruby_funcs.h, ruby_types.h, cffi-fun-defs.lisp, ruby_types.c & ruby-types.lisp for better code organization and preference
 
-- Variables! Supported types are Integers, Floats and Strings
+- Variables, Global and Module Constants! Supported types are Integers, Floats and Strings.
 
 - init-ruby -> Init the Ruby VM
 
