@@ -68,42 +68,8 @@ void ruby_define_global_func
     rb_define_global_function(name, func, argc);
 }   
 
-// Define a Ruby global constant (outside of a module)
-void ruby_define_constant(const char* name, VALUE value) {
-    rb_define_global_const(name, value);
-}
-
-// Define a Ruby module constant
-void ruby_define_module_constant
-(VALUE module_name, const char* name, VALUE value) {
-    // VALUE value needs to be coerced from uintptr_t
-    // to a c number/string/something
-    // documentation of this is under VALUE in the Ruby C API
-    rb_define_const(module_name, name, value);
-}
-
-// Undefine a Ruby module constant (set the constant to Ruby's NIL)
-void ruby_undef_module_constant(const char* name) {
-    // By the API, you can undefine a constant by setting it
-    // to Ruby's NIL
-    rb_define_global_const(name, Qnil);
-}
-
-// Call a global constant (a constant in the BasicObject class)
-VALUE ruby_call_constant(const char* name) {
-    // A Constant with no module/context can be declared 
-    // under a basic object
-    return rb_const_get(rb_cBasicObject, rb_intern(name));
-}
-
-// Call a module constant 
-VALUE ruby_call_module_constant(VALUE module_name, const char* name) {
-    return rb_const_get(module_name, rb_intern(name));
-}
-
 // Use an array of arguments with a given function on a specific object
-VALUE ruby_funcall(VALUE object, const char* func, VALUE* args[]) {
-    int argc = sizeof(*args)/sizeof(args[0]);
+VALUE ruby_funcall(VALUE object, const char* func, int argc, VALUE* args[]) {
     return rb_funcall(object, rb_intern(func), argc, args);
 }
 
