@@ -32,16 +32,13 @@ void ruby_define_global_func(const char* name, VALUE(*func)(), int argc);
 void ruby_define_constant(const char* name, VALUE value);
 void ruby_define_module_constant
 (VALUE module_name, const char* name, VALUE value);
-void ruby_undef_constant(const char* name);
-VALUE ruby_call_constant(const char* name);
-VALUE ruby_call_module_constant(VALUE module_name, const char* name);
 
 /* Variables */
 VALUE ruby_gensym();
 VALUE ruby_set_global_var(const char* name, VALUE value);
 
 /* Call a Ruby function */
-VALUE ruby_funcall(VALUE object, const char* func, VALUE* args[]);
+VALUE ruby_funcall(VALUE object, const char* func, int argc, VALUE* args[]);
  
 /* Require and load a Ruby function */
 void ruby_name_script(const char* name);
