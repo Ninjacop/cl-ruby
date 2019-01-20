@@ -8,7 +8,9 @@ All notable changes to this project will be documented in this file. This change
 
 - ruby_funcs.h, ruby_types.h, cffi-fun-defs.lisp, ruby_types.c & ruby-types.lisp for better code organization and preference
 
-- Variables, Global and Module Constants! Supported types are Integers, Floats and Strings.
+- Variables and Global & Module Constants! Supported types are Integers, Floats and Strings. -> `defrubyvar`, `defrubygconst`, `defrubymconst`, `const-call`, `module-const-call`, `undef-const` and `undef-module-const`
+
+- Global, Module and Class methods -> `global-method`, `module-method` and `class-method`. Methods/Functions defined through these can be called as an escaped symbol, which should be printed/returned after each one is used.
 
 - init-ruby -> Init the Ruby VM
 
