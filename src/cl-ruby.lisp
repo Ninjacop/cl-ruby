@@ -6,7 +6,7 @@
 (in-package #:cl-ruby)
 
 (cffi:define-foreign-library cl-ruby
-    (t (:default "/path/to/cl-ruby/src/cl-ruby"))) ; the dylib/dll/so part is omitted
+    (t (:default "~/Desktop/more/lisp/cl-ruby/src/cl-ruby"))) ; the dylib/dll/so part is omitted
                               ; TODO update paths and make sure this can
                               ; be found in specific directories/make it
                               ; specified
@@ -122,40 +122,40 @@
   (let ((method-name (%make-method-name ruby-class name))
         (signature (%make-signature args)))
     `(progn
+       (defun ,method-name ,args ,@body)
        (unless (%existing-signature-match-p ',method-name ,signature)
          (%register-callback ',method-name ,signature)
          ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args)))
             `(cffi:defcallback ,method-name uintptr_t ,ffi-args (,method-name ,@args)))
-         (ruby-class-method (cffi:translate-to-foreign (define-class ,ruby-class) 'uintptr_t))
-                            ,name (cffi:callback ,method-name) ,(length args))
-       (defun ,method-name ,args
-         ,@body))))
+         (ruby-class-method (cffi:translate-to-foreign (define-class ,ruby-class) 'uintptr_t)
+                            ,name (cffi:callback ,method-name) ,(length args)))
+    (values ',method-name))))
 
 (defmacro module-method (ruby-module name (&rest args) &body body)
   "Define a Ruby module method given the module that it's defined under, the 
    name of the target function, it's arguments and the body of that function."
-   (let ((method-name (%make-method-name ruby-module name))
-         (signature (%make-signature args)))
-    `(progn 
+  (let ((method-name (%make-method-name ruby-module name))
+        (signature (%make-signature args)))
+    `(progn
+       (defun ,method-name ,args ,@body)
        (unless (%existing-signature-match-p ',method-name ,signature)
          (%register-callback ',method-name ,signature)
-          ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args))
-                 (module-ptr (cffi:translate-to-foreign (module ruby-module) 'uintptr_t)))
-             `(cffi:defcallback ,method-name uintptr_t ,ffi-args (,method-name ,@args))
-          `(ruby-module-method ,module-ptr ,name (cffi:callback ,method-name) ,(length args))))
-       (defun ,method-name ,args
-        ,@body))))
+         ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args)))
+            `(cffi:defcallback ,method-name uintptr_t ,ffi-args (,method-name ,@args)))
+         (ruby-module-method (cffi:translate-to-foreign (module ,ruby-module) 'uintptr_t)
+                            ,name (cffi:callback ,method-name) ,(length args)))
+    (values ',method-name))))
 
 (defmacro global-method (name (&rest args) &body body)
   "Define a Ruby global function that is defined under the toplevel, with 
    the given name of the function, its arguments and body."
    (let ((global-name (%make-global-func-name name))
          (signature (%make-signature args)))
-    `(progn 
+    `(progn
+       (defun ,global-name ,args ,@body)
        (unless (%existing-signature-match-p ',global-name ,signature)
          (%register-callback ',global-name ,signature)
-          ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args)))
-             `(cffi:defcallback ,global-name uintptr_t ,ffi-args (,global-name ,@args))
-          `(ruby-global ,name (cffi:callback ,global-name) ,(length args))))
-       (defun ,global-name ,args 
-         ,@body))))
+         ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args)))
+            `(cffi:defcallback ,global-name uintptr_t ,ffi-args (,global-name ,@args)))
+         (ruby-global ,name (cffi:callback ,global-name) ,(length args)))
+    (values ',global-name))))
