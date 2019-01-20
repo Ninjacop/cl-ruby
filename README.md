@@ -41,13 +41,11 @@ LispWorks      | :x: Hasn't been tested
 
 ## Functions That Do Not Work/Buggy
 
-- class-method/module-method/global -> still has errors, **do not use yet**
-
-- ruby-funcall -> Haven't put time into making this work yet, but variable support is already here
+- ruby-funcall -> Haven't put time into making this work yet
 
 - require-script -> calling this will result in a never ending loop where Ctrl-C cannot be used successfully
 
-- load-script
+- load-script -> Segfault/memory fault to investigate later
 
 ## Ruby C API
 
