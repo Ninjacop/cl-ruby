@@ -10,21 +10,17 @@
            #:evaluate
            #:evaluate-or-die
            #:define-class
-           #:define-subclass)
+           #:define-subclass
+           #:class-method 
+           #:module-method 
+           #:global-method)
   ;; cffi-fun-defs.lisp
   (:export #:module
            #:submodule
            #:class-with-super
            #:subclass-with-super
-           #:class-method
-           #:module-method
-           #:global
-           #:define-int 
-           #:const 
-           #:module-const
-           #:undef
-           #:const-call 
-           #:module-const-call 
+           #:undef-const 
+           #:undef-module-const
            #:ruby-funcall 
            #:script
            #:require-script
@@ -33,5 +29,9 @@
            #:last-exception)
   ;; ruby-types.lisp
   (:export #:var-call
-           #:defrubyvar))
+           #:defrubyvar
+           #:defrubygconst
+           #:defrubymconst
+           #:const-call 
+           #:module-const-call))
 
