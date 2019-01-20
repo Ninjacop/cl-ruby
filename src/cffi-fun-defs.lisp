@@ -60,20 +60,20 @@
   "Defines a Ruby class method."
   (class-name uintptr_t)
   (func-name :string)
-  (func uintptr_t)
+  (func :pointer)
   (argc :int))
 
 (cffi:defcfun ("ruby_define_module_method" ruby-module-method) :void
   "Defines a Ruby module method."
   (module-name uintptr_t)
   (func-name :string)
-  (func uintptr_t)
+  (func :pointer)
   (argc :int))
 
 (cffi:defcfun ("ruby_define_global_func" ruby-global) :void
   "Define a global Ruby function/method."
   (name :string)
-  (func uintptr_t)
+  (func :pointer)
   (argc :int))
 
 ;;; Variables
@@ -169,7 +169,8 @@
   (name :string))
 
 (cffi:defcfun ("ruby_undef_module_constant" undef-module-const) :void
-  "Undefine a Ruby module constant. The Ruby "
+  "Undefine a Ruby module constant. The Ruby VM will say that the variable
+   is being redefined, because it is being binded to NIL."
   (module-name uintptr_t)
   (name :string))
 
