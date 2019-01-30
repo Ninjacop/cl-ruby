@@ -14,4 +14,4 @@
                 ((:file "cl-ruby")
                  (:file "ruby-classes")
                  (:file "ruby-types")
-                 (:file "cffi-fun-defs")))))
+                 (:file "cffi-definitions")))))
