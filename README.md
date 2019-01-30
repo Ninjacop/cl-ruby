@@ -12,11 +12,7 @@ _cl-ruby is not available on Quicklisp or ASDF yet._
 
 1. Clone this repo into quicklisp/local-projects, or create a symlink with the `cl-ruby.asd` file and put it in that folder.
 
-2. Navigate to the folder containing the Makefile and run `make (mac/linux/windows)` to create a library. If an error is returned, check where the C compiler is looking for libruby.(dylib/dll/so) and rebuild it.
-
-3. Move the created library into the `cl-ruby/src` directory and go into `cl-ruby.lisp`. Change the ninth (9th) line to the absolute path is to the cl-ruby dylib/dll/so.
-
-4. You should be ready to go, just load the package in by evaluating `(load "cl-ruby.asd") (ql:quickload 'cl-ruby)`.
+2. You should be ready to go, just load the package in by evaluating `(load "cl-ruby.asd") (ql:quickload 'cl-ruby)`.
 
 ## Implementation Support
 
@@ -37,15 +33,9 @@ LispWorks      | :x: Hasn't been tested
 
 - If `(init-ruby)` has been called and `(ql:quickload 'cl-ruby)` is evaluated before `(end-ruby)` has been called, a fatal error will occur. In SBCL, you will be navigated to the LDB, or the low-level Lisp DeBugger. To exit, just type `quit`.
 
-- Every symbol in cl-ruby (i.e. `~basic-object~`) is not exported, therefore you have to evaluate `(in-package :cl-ruby)` at the moment.
-
 ## Functions That Do Not Work/Buggy
 
-- ruby-funcall -> Haven't put time into making this work yet
-
-- require-script -> calling this will result in a never ending loop where Ctrl-C cannot be used successfully
-
-- load-script -> Segfault/memory fault to investigate later
+- in-ruby -> Calling this multiple times will give a bunch of nasty errors on Ruby/C's side (fixing this atm)
 
 ## Ruby C API
 

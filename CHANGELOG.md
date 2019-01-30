@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).  
 
+## 0.0.3
+
+### Added
+
+- ruby-funcall -> It works pretty well now!
+
+- Started working on documentation, and how to actually use cl-ruby (see `doc` folder)
+
+- Test functions/cases are fully completed
+
+- Expanded upon the `example.rb`, which Ruby code from scripts can now be called in Common Lisp!!
+
+- Added Ruby <-> CL type conversions
+
+### Changed
+
+- end-ruby -> now `stop-ruby` because you can stop the Ruby VM in more than one way
+
+- class-with-super & subclass-with-super -> they are now `define-class` and `define-subclass`
+
+- cffi-fun-defs.lisp -> cffi-definitions.lisp
+
+### Removed
+
+- var-call, const-call & module-const-call -> now merged with `defrubyvar` and the likes
+
+- The need to create a shared library & C code/headers
+
 ## 0.0.2
 
 ### Added
@@ -18,7 +46,7 @@ All notable changes to this project will be documented in this file. This change
 
 - in-ruby -> Macro for doing both of the above quick
 
-- define-subclass -> subclass-with-super but with ~basic-object~ as the superclass
+- subclass -> subclass-with-super but with `~basic-object~` as the superclass
 
 - Test cases for most functions & an example Ruby script for those test cases
 
@@ -28,7 +56,7 @@ All notable changes to this project will be documented in this file. This change
 
 ### Changed
 
-- subclass -> subclass-with-super
+- define-subclass -> subclass-with-super
 
 - evaluate-or-die/last-exception -> Errors are `printf()` & `fflush(stdout)`ed, so that'll share that stream for printing the exception
 
