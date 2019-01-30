@@ -11,123 +11,123 @@
 ;; need to be called
 (defparameter *declared-constants* '())
 
-(defmacro defrubyvar (var-name type-key &optional value)
+;;; Ruby <-> CL conversions
+(defun rbstr->clstr (str)
+  "Take the pointer to a Ruby string, and convert it into
+   a Common Lisp string."
+  (cffi:with-foreign-object (str-ptr '(:pointer uintptr_t))
+    (setf (cffi:mem-ref str-ptr 'uintptr_t) str)
+    (rb-string-value-cstr str-ptr)))
+
+(defun undef-const (name)
+  "Undefine a constant, or set its value to Ruby's NIL"
+  (ruby-define-gconst name (ruby-nil)))
+
+(defun undef-module-const (module-name name)
+  (ruby-define-mconst module-name name (ruby-nil)))
+
+(defun defrubyvar (var-name type-key &optional value)
   "DEFines a RUBY VARiable dependent on the type given in the form 
    of a key."
   (case type-key
     (:int (if (typep value 'integer) ;; numberp captures floats
-              `(progn 
-                (define-int ,var-name ,value)
-                (push (cons ,var-name 'integer) *declared-variables*)) ;todo cons v push
+              (progn 
+                (push (cons var-name 'integer) *declared-variables*) ; TODO cons v push
+                (ruby-define-global var-name (int2num value)) ; declares/allocates the pointer/variable
+                (int2num value)) ; return the value so it can be used
               (error "~S is not an integer." value)))
     (:string (if (stringp value)
-                 `(progn 
-                    (define-string ,var-name ,value)
-                    (push (cons ,var-name 'string) *declared-variables*))
+                 (progn 
+                    (push (cons var-name 'string) *declared-variables*)
+                    (ruby-define-global var-name (clstr->rbstr value))
+                    (clstr->rbstr value))
                  (error "~S is not a string." value)))
     (:float (if (floatp value)
-                `(progn 
-                    (define-float ,var-name ,value)
-                    (push (cons ,var-name 'float) *declared-variables*))
+                (progn (push (cons var-name 'float) *declared-variables*)
+                    (ruby-define-global var-name (dbl2num value))
+                    (dbl2num value))
                 (error "~S is not a floating point number or double." value)))
-    (:array `(progn (define-array ,var-name)
-              (push (cons ,var-name 'array) *declared-variables*)))
-    (:hash `(progn (define-hash ,var-name)
-             (push (cons ,var-name 'hash) *declared-variables*)))
+    (:array (progn (push (cons var-name 'array) *declared-variables*)
+                   (if (and (eq (car value) :len) (numberp (cadr value)))
+                        (progn (if (equal (length value) 2) ; if it only contains '(:len num)
+                                   (ruby-define-global var-name
+                                      (ruby-new-array-length (int2num (cadr value))))
+                                   (if (> (length value) 2)
+                                          (error "Invalid number of arguments to DEFRUBYMCONST (~S)" (length value)))))
+                        (ruby-define-global var-name (ruby-new-array)))
+                    (ruby-get-global var-name)))
+    (:hash (progn
+             (push (cons var-name 'hash) *declared-variables*)
+             (ruby-define-global var-name (ruby-new-hash))
+             (ruby-get-global var-name)))
     (otherwise (error "~S is not a valid type key." type-key))))
 
-(defun defrubygconst (const-name type-key value)
+(defun defrubygconst (const-name type-key &optional value)
   "DEFines a RUBY Global CONSTant dependent on the type given in the form
    of a key."
   (case type-key 
     (:int (if (typep value 'integer) ;; numberp captures floats
-              (progn 
-                (int-const const-name value)
-                (push (cons const-name 'integer) *declared-constants*))
+              (progn (push (cons const-name 'integer) *declared-constants*)
+                (ruby-define-gconst const-name (int2num value))
+                (int2num value))
               (error "~S is not an integer." value)))
     (:float (if (floatp value)
-               (progn 
-                 (float-const const-name value)
-                 (push (cons const-name 'float) *declared-constants*))
+               (progn (push (cons const-name 'float) *declared-constants*)
+                 (ruby-define-gconst const-name (dbl2num value))
+                 (dbl2num value))
                (error "~S is not a floating point number or double." value)))
     (:string (if (stringp value)
-                 (progn 
-                   (str-const const-name value)
-                   (push (cons const-name 'string) *declared-constants*))
+                 (progn (push (cons const-name 'string) *declared-constants*)
+                   (ruby-define-gconst const-name (clstr->rbstr value))
+                   (clstr->rbstr value))
                  (error "~S is not a string." const-name)))
+    (:array  (progn (push (cons const-name 'array) *declared-constants*)
+                    (ruby-define-gconst const-name (ruby-new-array))
+                    (ruby-get-const ~object~ (ruby-intern const-name))))
+    (:hash (progn (push (cons const-name 'hash) *declared-constants*)
+                  (if (and (eq (car value) :len) (numberp (cadr value)))
+                      (progn (if (equal (length value) 2) ; if it only contains '(:len num)
+                                 (ruby-define-gconst ~object~ (ruby-intern const-name) 
+                                    (ruby-new-array-length (int2num (cadr value))))
+                                 (if (> (length value) 2)
+                                        (error "Invalid number of arguments to DEFRUBYMCONST (~S)" (length value)))))
+                      (ruby-define-gconst ~object~ (ruby-intern const-name) (ruby-new-array)))
+                  (ruby-get-const ~object~ (ruby-intern const-name))))
     (otherwise (error "~S is not a valid type key." type-key))))
 
-(defun defrubymconst (module-name const-name type-key value)
+(defun defrubymconst (module-name const-name type-key &optional value)
   "DEFines a RUBY Module CONSTant dependent on the type given in the form 
    of a key."
-   (let ((module-ptr (cffi:translate-to-foreign (module module-name) 'uintptr_t)))
+   (let ((module-ptr (module module-name)))
       (case type-key 
         (:int (if (typep value 'integer) ;; numberp captures floats
                   (progn 
-                    (int-module-const module-ptr const-name value)
-                    (push (cons const-name 'integer) *declared-constants*))
+                    (push (cons const-name 'integer) *declared-constants*)
+                    (ruby-define-mconst module-ptr const-name (int2num value))
+                    (int2num value))
                   (error "~S is not an integer." value)))
         (:float (if (floatp value)
                    (progn 
-                     (float-module-const module-ptr const-name value)
-                     (push (cons const-name 'float) *declared-constants*))
+                     (push (cons const-name 'float) *declared-constants*)
+                     (ruby-define-mconst module-ptr const-name (dbl2num value))
+                     (dbl2num value))
                    (error "~S is not a floating point number or double." value)))
         (:string (if (stringp value)
                      (progn 
-                       (str-module-const module-ptr const-name value)
-                       (push (cons const-name 'string) *declared-constants*))
+                       (push (cons const-name 'string) *declared-constants*)
+                       (ruby-define-mconst module-ptr const-name (clstr->rbstr value))
+                       (clstr->rbstr value))
                      (error "~S is not a string." const-name)))
+        (:array  (progn (push (cons const-name 'array) *declared-constants*)
+                        (if (and (eq (car value) :len) (numberp (cadr value)))
+                            (progn (if (equal (length value) 2) ; if it only contains '(:len num)
+                                       (ruby-define-mconst module-ptr const-name
+                                           (ruby-new-array-length (int2num (cadr value))))
+                                       (if (> (length value) 2)
+                                           (error "Invalid number of arguments to DEFRUBYMCONST (~S)" (length value)))))
+                            (ruby-define-mconst module-ptr const-name (ruby-new-array)))
+                        (ruby-get-const module-ptr const-name)))
+        (:hash (progn (push (cons const-name 'hash) *declared-constants*)
+                      (ruby-define-mconst module-ptr const-name (ruby-new-hash))
+                      (ruby-get-const module-ptr const-name)))
         (otherwise (error "~S is not a valid type key." type-key)))))
-
-(defun find-var (var alist)
-  "Search through an alist to find if `var` matches any 
-   keys of the alist, or the `car` of each entry. If 
-   the entry exists, return its type."
-  (let ((some-var (car alist)))
-    (if (member var some-var :test #'equalp) ; not case-sensitive
-        (cdr some-var) ; print the type of the variable that has been found
-        (if alist ; if there are still variables in the alist
-            (find-var var (cdr alist))
-            (error "~S is and undeclared variable." var)))))
-
-(defun var-call (var-name)
-  "Check if a given variable `var-name` exists, then depending
-   on its type, call a certain function that returns a decrypted
-   Ruby C VALUE."
-  (let ((var-type (find-var var-name *declared-variables*)))
-    (if var-type ;; is the variable declared?
-        (case var-type
-          ('integer (int-call var-name))
-          ('float (float-call var-name))
-          ('string (str-call var-name))
-          ('array (array-call var-name))
-          ('hash (hash-call var-name))
-          (otherwise (error "~S is not a valid variable type" var-type)))
-        (error "~S is undefined." var-name))))
-
-(defun const-call (var-name)
-  "Check if a given constant `var-name` exists, then depending 
-   on its type, call a certain function that returns a decrypted 
-   Ruby C VALUE."
-  (let ((var-type (find-var var-name *declared-constants*)))
-    (if var-type ;; is the constant declared?
-        (case var-type
-          ('integer (int-const-call var-name))
-          ('string (str-const-call var-name))
-          ('float (float-const-call var-name))
-          (otherwise (error "~S is not a valid variable type" var-type)))
-        (error "~S is undefined." var-name))))
-
-(defun module-const-call (module-name var-name)
-  "Check if a given constant `var-name` exists, then depending 
-   on its type, call a certain function that returns a decrypted 
-   Ruby C VALUE."
-   (let ((var-type (find-var var-name *declared-constants*))
-         (module-ptr (cffi:translate-to-foreign (module module-name) 'uintptr_t)))
-     (if var-type 
-         (case var-type
-           ('integer (int-module-const-call module-ptr var-name))
-           ('float (float-module-const-call module-ptr var-name))
-           ('string (str-module-const-call module-ptr var-name))
-           (otherwise (error "~S is not a valid variable type." var-type)))
-          (error "~S is undefined." var-name))))

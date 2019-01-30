@@ -1,9 +1,13 @@
 ;;;; ruby-types.lisp
 ;;;; Created by Ninjacop123
 ;;;; Wednesday, January 9th, 2019
-;;;; CFFI bindings of Ruby classes, modules and exceptions
+;;;; CFFI bindings of Ruby classes, modules and exceptions.
+;;;; Since Ruby classes are like CL global variables/earmuff'd
+;;;; I decided to make the Ruby classes unique by putting `~`s 
+;;;; around them.
 (in-package #:cl-ruby)
-
+(export (list ; This does the "excellent" job of only exporting these symbols
+              ; and nothing else :)
 ;;; Ruby Modules converted into their CL counterparts (pointers)
 (cffi:defcvar ("rb_mKernel" ~kernel~) uintptr_t)
 (cffi:defcvar ("rb_mComparable" ~comparable~) uintptr_t)
@@ -96,4 +100,4 @@
 (cffi:defcvar ("rb_eSyntaxError" ~sytax-error~) uintptr_t)
 (cffi:defcvar ("rb_eLoadError" ~load-error~) uintptr_t)
 
-(cffi:defcvar ("rb_eMathDomainError" ~math-domain-error~) uintptr_t)
+(cffi:defcvar ("rb_eMathDomainError" ~math-domain-error~) uintptr_t)))
