@@ -12,7 +12,9 @@ _cl-ruby is not available on Quicklisp or ASDF yet._
 
 1. Clone this repo into quicklisp/local-projects, or create a symlink with the `cl-ruby.asd` file and put it in that folder.
 
-2. You should be ready to go, just load the package in by evaluating `(load "cl-ruby.asd") (ql:quickload 'cl-ruby)`.
+2. Be sure that libruby.dylib/so/dll is somewhere in your filesystem, but if the library can't be found, go into `cl-ruby.lisp` and change the string `"libruby"` to the absolute path to where it is.
+
+3. You should be ready to go, just load the package in by evaluating `(load "cl-ruby.asd") (ql:quickload 'cl-ruby)`.
 
 ## Implementation Support
 
@@ -36,6 +38,8 @@ LispWorks      | :x: Hasn't been tested
 ## Functions That Do Not Work/Buggy
 
 - in-ruby -> Calling this multiple times will give a bunch of nasty errors on Ruby/C's side (fixing this atm)
+
+- end-ruby -> Gives out a segfault when called a second time
 
 ## Ruby C API
 
