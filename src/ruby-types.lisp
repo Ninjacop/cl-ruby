@@ -24,7 +24,7 @@
   (ruby-define-gconst name (ruby-nil)))
 
 (defun undef-module-const (module-name name)
-  (ruby-define-mconst module-name name (ruby-nil)))
+  (ruby-define-mconst (module module-name) name (ruby-nil)))
 
 (defun defrubyvar (var-name type-key &optional value)
   "DEFines a RUBY VARiable dependent on the type given in the form 
