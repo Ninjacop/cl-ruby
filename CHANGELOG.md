@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. This change log follows the conventions of [keepachangelog.com](http://keepachangelog.com/).  
 
+## 0.0.4
+
+### Added
+
+- Finished adding in all the documentation, see the `doc` folder
+
+### Changed
+
+- `define-class` & `define-subclass` -> `defrubyclass` & `defrubysubclass`
+
+- in `evaluate-or-die` and `load-script-or-die`, there was a typo -- `(fiinish-output)`
+
+- `ruby-global` helper function was referencing a C function from when there was a need to create a shared library
+
+- Made `example.rb` cooler
+
 ## 0.0.3
 
 ### Added
@@ -74,18 +90,12 @@ All notable changes to this project will be documented in this file. This change
 
 ## TODO
 
-- Maybe not redefine the one-line functions in `ruby_funcs.c` and use the original names in the CFFI bindings?
+- Shorten function names
 
-- Make it easier/simpler to create Ruby methods and functions
+- Find a way to turn a Ruby array/hash into a list and hashtable that CL can view/interpret
 
-- Find out the type for a CFFI array
-
-- Find out where `libruby.dll` and `libruby.so` are stored on Windows & Linux for the Makefile
-
-- Add more functions
+- Add more exception functions
 
 - Test every CL implementation
 
-- Finish writing test cases
-
-- Export all the symbols in ruby-types
+- Change the tests
