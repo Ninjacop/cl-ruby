@@ -13,8 +13,8 @@
            #:evaluate-or-die
            #:class-instance
            #:class-accessor
-           #:define-class
-           #:define-subclass
+           #:defrubyclass
+           #:defrubysubclass
            #:class-method 
            #:module-method 
            #:global-method
