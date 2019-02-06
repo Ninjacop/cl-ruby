@@ -74,7 +74,7 @@
     (let ((result (ruby-eval-or-die str state)))
       (when (/= 0 state)
         (format t "~A" exception)
-        (fiinish-output))))
+        (finish-output))))
   (values))
 
 (defun class-instance (module-name class-name &rest self-args)
@@ -130,7 +130,7 @@
    `global.` is added. "
   (intern (format nil "global.~A" global-name)))
 
-(defmacro class-method (ruby-class name (&rest args) &body body)
+(defmacro class-method (super ruby-class name (&rest args) &body body)
   "Define a Ruby class method given the class that it's defined under, the 
    name of the target function, it's arguments and the body of that function."
   (let ((method-name (%make-method-name ruby-class name))
@@ -141,7 +141,7 @@
          (%register-callback ',method-name ,signature)
          ,(let ((ffi-args (mapcar (lambda (name) (list name 'uintptr_t)) args)))
             `(cffi:defcallback ,method-name uintptr_t ,ffi-args (,method-name ,@args)))
-         (ruby-class-method (cffi:translate-to-foreign (define-class ,ruby-class) 'uintptr_t)
+         (ruby-class-method (cffi:translate-to-foreign (defrubyclass ,ruby-class ,super) 'uintptr_t)
                             ,name (cffi:callback ,method-name) ,(length args)))
     (values ',method-name))))
 
@@ -176,11 +176,10 @@
 
 (defun load-script-or-die (name value exception)
     (cffi:with-foreign-object (state :int)
-    (let* ((ruby-name (clstr->rbstr name))
-           (result (load-script-protect ruby-name value state)))
+    (let ((result (load-script-protect name value state)))
       (when (/= 0 state)
         (format t "~A" exception)
-        (fiinish-output))))
+        (finish-output))))
   (values))
 
 (defun ruby-funcall (object func-name &rest args)
