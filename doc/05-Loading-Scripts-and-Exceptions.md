@@ -11,7 +11,7 @@ Passing a non-zero value to the second argument "can wrap the loaded code in an 
 Example:
 
     ;;;; SBCL
-    * (load-script (clstr->rbstr "./example.rb) 0)
+    * (load-script (clstr->rbstr "./example.rb") 0)
 
     ; nothing is returned, but the script is loaded
 

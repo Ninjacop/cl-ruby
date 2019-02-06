@@ -1,6 +1,6 @@
 # Ruby Funcall
 
-Ruby funcall! Instead of porting over every single function from Ruby into CL, `ruby-funcall` does that while keeping cl-ruby small. In addition, this returns a pointer or Ruby value, so `ruby-funcall` will have to be encased with an `num2int` and the likes
+Instead of porting over every single function from Ruby into CL, `ruby-funcall` does that while keeping cl-ruby small. In addition, this returns a pointer or Ruby value, so `ruby-funcall` will have to be encased with an `num2int` and the likes.
 
 Arguments:
 
