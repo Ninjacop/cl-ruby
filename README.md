@@ -8,7 +8,7 @@ As of the current state of the project, it has some errors, but will be actively
 
 ## Installation
 
-_cl-ruby is not available on Quicklisp or ASDF yet._
+_cl-ruby is not available on Quicklisp yet._
 
 1. Clone this repo into quicklisp/local-projects, or create a symlink with the `cl-ruby.asd` file and put it in that folder.
 
@@ -40,6 +40,8 @@ LispWorks      | :x: Hasn't been tested
 - in-ruby -> Calling this multiple times will give a bunch of nasty errors on Ruby/C's side (fixing this atm)
 
 - end-ruby -> Gives out a segfault when called a second time
+
+- load-script-or-die -> Gives out a segfault when called and the script can't be found
 
 ## Ruby C API
 
