@@ -86,7 +86,7 @@ In addition to defining constants, you can undefine them, which is the equivalen
         * (undef-module-const "MyModule" "YOURCONST")
         ruby: warning: already initialized constant MyModule::YOURCONST
 
-        ;nothing
+        ; nothing
 
 ## Type Conversions
 
