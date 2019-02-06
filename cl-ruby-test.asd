@@ -5,7 +5,7 @@
   :description "A Common Lisp to Ruby FFI."
   :author "Ninjacop123"
   :license "GNU GPLv3"
-  :version "0.0.2"
+  :version "0.0.4"
   :serial t 
   :components ((:module "t"
                 :components 
