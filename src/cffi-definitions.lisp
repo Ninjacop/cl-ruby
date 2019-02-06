@@ -88,12 +88,12 @@
   (ary  :pointer)
   (using-class uintptr_t))
 
-(cffi:defcfun ("rb_define_class" define-class) uintptr_t
+(cffi:defcfun ("rb_define_class" defrubyclass) uintptr_t
   "Defines a Ruby class. Ex - `class Example`."
   (name :string)
   (super-name uintptr_t))
 
-(cffi:defcfun ("rb_define_class_under" define-subclass) uintptr_t
+(cffi:defcfun ("rb_define_class_under" defrubysubclass) uintptr_t
   "Defines a Ruby class that is inherited. Ex - `class Example < Example2`."
   (name :string)
   (parent-name uintptr_t)
@@ -113,7 +113,7 @@
   (func :pointer)
   (argc :int))
 
-(cffi:defcfun ("ruby_define_global_function" ruby-global) :void
+(cffi:defcfun ("rb_define_global_function" ruby-global) :void
   "Define a global Ruby function/method."
   (name :string)
   (func :pointer)
