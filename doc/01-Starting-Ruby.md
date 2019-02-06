@@ -59,9 +59,9 @@ So there's the absolute basics. Next, to evaluate Ruby code, you can use `evalua
     * (evaluate "puts 'Hello Common Lisp!!!!'")
     Hello Common Lisp!!!!
 
-    8 
+    8
     * (evaluate "1 + 2")
 
     7
 
-Wait what?? `1 + 2` returns 7?? A lot of Ruby's VM is just a bunch of pointers being passed around, which is the case for this. In the next chapter or in "02-Variables-and-Types.md", we will go over how to turn those pointers into Common Lisp values.
+Wait what?? `1 + 2` returns 7?? A lot of Ruby's VM is just a bunch of pointers being passed around, which is the case for this.
