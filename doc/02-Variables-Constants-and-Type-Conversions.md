@@ -66,7 +66,7 @@ Argument options: see `defrubyvar`
 
         ;;;; SBCL
         * (defrubygconst "myConst" :array :len 3)
-        ruby: warning: rb_define_const: invalid name `asdF' for constant
+        ruby: warning: rb_define_const: invalid name `myConst' for constant
 
         ; pointer
 
