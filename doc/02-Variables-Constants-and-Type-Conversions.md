@@ -2,19 +2,21 @@
 
 ## Variables
 
+**Note**: class variables don't exist yet
+
 With variables, there are 5 options - integer, float, string, array and hash. Hashes and arrays are a little weird though, because you can't see what they look like (at the moment, TODO), just their pointers. In addition with arrays, you can declare them with a certain length, which `nil` is a placeholder for each index. Speaking of Ruby's nil, you can call it by evaluating `(ruby-nil)` -- this returns 8 because Ruby's nil is stored in an enum, and it's in the 8th index. The format of how to declare variables goes like this:
 
 Integers, Floats & Strings:
 
-    (defrubyvar [name] [type] [value])
+    (defrubyvar [string name] [type-key] [CL value])
 
 Arrays:
 
-    (defrubyvar [name] [type] &optional [length-key] [amount])
+    (defrubyvar [string name] :array &optional :len [integer amount])
 
 Hashes:
 
-    (defrubyvar [name] [type])
+    (defrubyvar [string name] :hash)
 
 Here's an example of all these in action:
 
@@ -42,7 +44,9 @@ As I've said in the previous entry, there are so many pointers because under Rub
 
 ## Constants
 
-Also in Ruby, you can define constants at the toplevel and module level. The naming conventions are UPPERCASE or starting with a capital letter, and even if they are declared with MiXeD CaSe or lowercase, the Ruby VM will print out a warning saying that the constant is invalid. Constants also work like `defrubyvar`, except the names should be uppercased.
+Also in Ruby, you can define constants at the toplevel and module level. The naming conventions are UPPERCASE or starting with a capital letter, and even if they are declared with MiXeD CaSe or lowercase, the Ruby VM will print out a warning saying that the constant is invalid. Constants also work like `defrubyvar`, except the names should be uppercased. Note that constants are defined under `~object~` class.
+
+Argument options: see `defrubyvar`
 
 - Global Constants -> `defrubygconst` (Don't forget the "g")
 
