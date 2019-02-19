@@ -50,7 +50,7 @@ The API used for cl-ruby is available [here](http://silverhammermba.github.io/em
 ## License
 
 Copyright :copyright: Ninjacop123 2019
-GNU GPLv3
+MIT
 
 ## Special Thanks
 
