@@ -41,7 +41,7 @@ LispWorks      | :x: Hasn't been tested
 
 - end-ruby -> Gives out a segfault when called a second time
 
-- load-script-or-die -> Gives out a segfault when called and the script can't be found
+- load-script-or-die/evaluate-or-die -> Gives out a segfault when called, no matter what
 
 ## Ruby C API
 
@@ -49,8 +49,8 @@ The API used for cl-ruby is available [here](http://silverhammermba.github.io/em
 
 ## License
 
-Copyright :copyright: Ninjacop123 2019
-GNU GPLv3
+Copyright (c) Ninjacop123 2019
+MIT
 
 ## Special Thanks
 
