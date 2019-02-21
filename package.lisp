@@ -10,7 +10,7 @@
            #:stop-ruby
            #:in-ruby
            #:evaluate
-           #:evaluate-or-die
+          ;#:evaluate-or-die
            #:class-instance
            #:class-accessor
            #:defrubyclass
@@ -18,7 +18,7 @@
            #:class-method 
            #:module-method 
            #:global-method
-           #:load-script-or-die
+          ;#:load-script-or-die
            #:ruby-funcall
            #:clear-last-exception
            ;; cffi-fun-defs.lisp
