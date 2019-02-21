@@ -198,7 +198,7 @@
   (name uintptr_t)
   (value :int))
 
-(cffi:defcfun ("ruby_load_protect" load-script-protect) :void
+(cffi:defcfun ("rb_load_protect" load-script-protect) :void
   "Load a Ruby script, and if an error occurs or it is not
    found, throw an error."
   (name uintptr_t)
