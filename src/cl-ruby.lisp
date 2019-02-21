@@ -67,15 +67,19 @@
       (ruby-evaluate code)
       (error "There is no Ruby VM running.")))
 
+#|
+This function along with `load-script-or-die are not functional, and I need
+extra time to figure out what is going on with them 
+
 (defun evaluate-or-die (code exception)
   "Evaluate Ruby code and throw an exception/error when something 
    goes wrong/segfault."
   (cffi:with-foreign-object (state :int)
-    (let ((result (ruby-eval-or-die str state)))
-      (when (/= 0 state)
-        (format t "~A" exception)
-        (finish-output))))
-  (values))
+    (let ((result (ruby-eval-or-die code (cffi:mem-ref state :int))))
+      (when (/= 0 (cffi:mem-ref state :int))
+        (format t "~A" exception))
+      result)))
+|#
 
 (defun class-instance (module-name class-name &rest self-args)
   (if self-args ; if self.class-function needs any arguments, or if there are any
@@ -84,10 +88,10 @@
         (cffi:with-foreign-object (ruby-args 'uintptr_t signature)
           (dotimes (i signature)
             (setf (mem-aref ruby-args 'uintptr_t i) 
-                  (cond ((integerp (nth i args)) (int2num (nth i args)))
-                        ((stringp (nth i args)) (clstr->rbstr (nth i args)))
-                        ((floatp (nth i args)) (dbl2num (nth i args)))
-                        (t (error "~S's type is not an acceptable type" (nth i args))))))
+                  (cond ((integerp (nth i self-args)) (int2num (nth i self-args)))
+                        ((stringp (nth i self-args)) (clstr->rbstr (nth i self-args)))
+                        ((floatp (nth i self-args)) (dbl2num (nth i self-args)))
+                        (t (error "~S's type is not an acceptable type" (nth i self-args))))))
           (new-ruby-class-instance signature ruby-args ruby-class)))
       (new-ruby-class-instance 0 (cffi:null-pointer) (ruby-get-const module-name 
                                                                     (ruby-intern class-name)))))
@@ -174,13 +178,17 @@
          (ruby-global ,name (cffi:callback ,global-name) ,(length args)))
     (values ',global-name))))
 
+#|
+this is commented out because this function is not functional, I'll need some more time to
+figure out what is going on with this
+
 (defun load-script-or-die (name value exception)
-    (cffi:with-foreign-object (state :int)
-    (let ((result (load-script-protect name value state)))
-      (when (/= 0 state)
-        (format t "~A" exception)
-        (finish-output))))
-  (values))
+  (cffi:with-foreign-object (state :int)
+    (let ((result (load-script-protect name value (cffi:mem-ref state :int))))
+      (when (/= 0 (cffi:mem-ref state :int))
+        (format t "~A" exception))
+      result)))
+|#
 
 (defun ruby-funcall (object func-name &rest args)
   (if args ; if there are any arguments
